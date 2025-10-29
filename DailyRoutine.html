@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <link rel="icon" href="../8594491.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Daily Routine — RPG Dark</title>
+  <style>
+    :root{
+      --bg:#071026;
+      --card:#0b1630;
+      --muted:#98a8bf;
+      --glass:rgba(255,255,255,0.03);
+      --accent1:#60f2d9;
+      --accent2:#8b5cf6;
+      --radius:14px;
+      --panel:#081426;
+      --text:#e7f0fb;
+      --muted2:#9fb3c8;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(139,92,246,0.09), transparent 6%),
+                  linear-gradient(180deg,#041026 0%, #071a33 100%);
+      color:var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:26px;
+      min-height:100vh;
+    }
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr 380px;
+      gap:20px;
+    }
+    header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted2);font-size:13px}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow: 0 8px 40px rgba(2,6,23,0.6);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    /* Main column (left) */
+    .goals{display:flex;flex-direction:column;gap:14px}
+    .goal-row{display:flex;align-items:center;gap:12px}
+    .goal-checkbox{
+      width:56px;height:56px;border-radius:12px;background:var(--glass);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;cursor:pointer;
+      border:1px solid rgba(255,255,255,0.03)
+    }
+    .goal-body{flex:1}
+    .goal-title{display:flex;align-items:center;gap:10px}
+    .goal-title h3{margin:0;font-size:16px}
+    .goal-meta{color:var(--muted);font-size:12px;margin-top:6px}
+    .small-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:8px;color:var(--muted);cursor:pointer;font-size:13px}
+
+    .progress{display:flex;gap:12px;align-items:center;margin-top:10px}
+    .progress .bar{height:12px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;flex:1}
+    .progress .bar > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2));}
+
+    .stat{min-width:110px;font-size:13px}
+
+    .levels{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+    .level-pill{padding:8px;border-radius:10px;font-size:13px;color:#071226;font-weight:700;display:flex;align-items:center;gap:8px}
+
+    /* Sidebar */
+    .sidebar{display:flex;flex-direction:column;gap:12px;position:sticky;top:26px;align-self:start}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+    input[type="number"], input[type="text"], textarea, select{
+      width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text);font-size:13px;margin-top:6px;
+    }
+    .row{display:flex;gap:8px}
+    .tiny{font-size:12px;color:var(--muted)}
+
+    footer{grid-column:1/-1;margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(3,6,12,0.6);opacity:0;pointer-events:none;transition:all .2s}
+    .modal.open{opacity:1;pointer-events:auto}
+    .paper{width:820px;max-width:95%;background:var(--card);padding:18px;border-radius:14px;border:1px solid rgba(255,255,255,0.04)}
+    .flex-between{display:flex;align-items:center;justify-content:space-between}
+
+    .level-config{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+    .color-input{height:34px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);overflow:hidden;padding:3px;background:transparent}
+
+    .mini-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
+    @media (max-width:980px){
+      .wrap{grid-template-columns:1fr;padding:12px}
+      .sidebar{position:static}
+    }
+  </style>
+
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Daily Routine — Dark RPG</h1>
+        <p class="lead">Boire 3L • 10 000 pas • Activité sportive • Trading — XP intelligent & 20 niveaux</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button id="openSettings" class="small-btn">⚙️ Paramètres</button>
+        <button id="exportBtn" class="small-btn">⬇️ Export</button>
+        <button id="importBtn" class="small-btn">⬆️ Import</button>
+        <button id="resetBtn" class="small-btn">♻️ Reset</button>
+      </div>
+    </header>
+
+    <!-- LEFT: goals + dashboard -->
+    <main class="card" style="min-height:520px">
+      <section class="goals" id="goalsContainer">
+        <!-- generated in JS -->
+      </section>
+
+      <section class="card" style="margin-top:14px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0">Tableau de bord</h3>
+          <div class="tiny">Niveaux : 20 | XP palier de base : 100 (ajustable)</div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+          <div style="width:110px;height:110px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-size:20px;font-weight:800" id="overallLevel">—</div>
+            <div class="tiny">Niveau global</div>
+          </div>
+
+          <div style="flex:1">
+            <label class="tiny">XP totale (toutes compétences)</label>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+              <div style="flex:1">
+                <div class="progress">
+                  <div class="bar"><i id="overallBar"></i></div>
+                </div>
+              </div>
+              <div class="stat" id="totalXP">0 XP</div>
+            </div>
+
+            <div class="mini-badges" id="miniLevels"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <h4 style="margin:0 0 6px 0">Niveaux détaillés</h4>
+          <div id="levelsList" class="levels"></div>
+        </div>
+      </section>
+    </main>
+
+
+    <!-- RIGHT: settings / preview -->
+    <aside class="sidebar">
+      <div class="card">
+        <h3 style="margin:0">Paramètres rapides</h3>
+        <p class="tiny" style="margin-top:6px">Ajuste les formules et XP de base.</p>
+
+        <div style="margin-top:10px">
+          <label>XP base pour Boire 3L</label>
+          <input id="xpWater" type="number" min="0" value="25">
+          <label style="margin-top:8px">XP max pour 10 000 pas (ex: 100)</label>
+          <input id="xpStepsMax" type="number" min="0" value="100">
+          <label style="margin-top:8px">XP / min Sport</label>
+          <input id="xpSportPerMin" type="number" min="0" value="2">
+          <label style="margin-top:8px">Trading: XP / min</label>
+          <input id="xpTradingPerMin" type="number" min="0" value="1.5">
+          <label style="margin-top:8px">Trading: XP / € de gain (diviseur)</label>
+          <input id="xpTradingGainDivisor" type="number" min="1" value="10">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0">Aperçu d'une compétence</h3>
+        <p class="tiny" style="margin:6px 0">Choisis une compétence puis édite ses 20 niveaux.</p>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <select id="skillPreview" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03)">
+            <option value="water">Hydratation</option>
+            <option value="steps">Endurance</option>
+            <option value="sport">Sport</option>
+            <option value="trading">Trading</option>
+          </select>
+          <button id="editLevelsBtn" class="small-btn">✏️ Editer</button>
+        </div>
+        <div id="previewArea" class="levels"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0">Sauvegarde / Import</h3>
+        <p class="tiny" style="margin:6px 0">Exporter ta config (JSON) ou importer.</p>
+        <div style="display:flex;gap:8px">
+          <button id="downloadConfig" class="small-btn">Télécharger JSON</button>
+          <button id="loadConfig" class="small-btn">Charger JSON</button>
+        </div>
+      </div>
+    </aside>
+
+    <footer>Les données journalières se réinitialisent automatiquement à minuit — tes niveaux et historique restent sauvegardés.</footer>
+  </div>
+
+  <!-- Modal edit levels -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="paper">
+      <div class="flex-between">
+        <h3 style="margin:0" id="modalTitle">Éditer les niveaux</h3>
+        <div style="display:flex;gap:8px">
+          <button id="closeModal" class="small-btn">Fermer</button>
+        </div>
+      </div>
+
+      <p class="tiny" style="margin-top:8px">Modifie les noms & couleurs des 20 niveaux. Les changements sont sauvegardés automatiquement.</p>
+
+      <div id="levelConfigWrap" style="margin-top:12px"></div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="resetLevels" class="small-btn">Reset niveaux par défaut</button>
+        <div style="flex:1"></div>
+        <button id="applyClose" class="small-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /********************************************************************
+   * Daily Routine Master v3 — Dark RPG
+   * - 4 skills: water, steps, sport, trading
+   * - XP variable based on performance (steps, minutes, gains)
+   * - Daily inputs saved per date; reset daily tasks at midnight (new date)
+   * - Levels: 20 per skill, editable names & colors
+   * - Dashboard: per-skill and overall level
+   ********************************************************************/
+
+  /* ---------- defaults ---------- */
+  const DEFAULT = {
+    xpSettings: {
+      water: 25,
+      stepsMax: 100,
+      sportPerMin: 2,
+      tradingPerMin: 1.5,
+      tradingGainDivisor: 10
+    },
+    skills: {
+      water: { id:'water', label:'Hydratation', icon:'💧' },
+      steps: { id:'steps', label:'Endurance', icon:'🚶' },
+      sport: { id:'sport', label:'Sport', icon:'🏋️' },
+      trading: { id:'trading', label:'Trading', icon:'📈' }
+    },
+    levelsBySkill: {}
+  };
+
+  function defaultLevelsFor(skill){
+    const sets = {
+      water: [
+        ["Goutte","#c7f9ff"],["Rosée","#bfefff"],["Flocon d'eau","#b3f0ff"],["Source","#8fd3ff"],
+        ["Filet d'eau","#7ec8ff"],["Ruisseau","#51b7ff"],["Courant","#2aa4ff"],["Cascade","#00a0ff"],
+        ["Rivière","#0086d1"],["Fleuve","#006fb2"],["Mer","#005a99"],["Océan","#004080"],
+        ["Courant Marin","#003366"],["Ouragan","#002b66"],["Tsunami","#001f4d"],["Esprit de l'Eau","#001733"],
+        ["Maître de l'Eau","#001022"],["Gardien des Océans","#0b2740"],["Seigneur des Mers","#08142b"],["Divinité Aquatique","#061224"]
+      ],
+      steps: [
+        ["Débutant","#dfffe6"],["Marcheur","#b9ffd6"],["Coureur","#b0f2bb"],["Randonneur","#8fe7a8"],
+        ["Explorateur","#7bd390"],["Aventurier","#60c57a"],["Sprinteur","#48b061"],["Voyageur","#33a34d"],
+        ["Endurant","#2a8f3e"],["Trailblazer","#257737"],["Survivant","#1f5f2f"],["Globe-Trotter","#184b26"],
+        ["Alpiniste","#123b1f"],["Marathonien","#0f2f18"],["Iron Walker","#0a2612"],["Maître du Chemin","#071e0c"],
+        ["Voyageur Légendaire","#06170a"],["Gardien des Routes","#041106"],["Explorateur Suprême","#031004"],["Esprit de la Terre","#021002"]
+      ],
+      sport: [
+        ["Recrue","#fff1d2"],["Débutant","#ffe5b4"],["Apprenti","#ffd19a"],["Entraîné","#ffc07a"],
+        ["Athlète","#ffab4d"],["Confirmé","#ff8f33"],["Expert","#ff7420"],["Compétiteur","#ff5a00"],
+        ["Champion","#ff4500"],["Pro","#e03f00"],["Maître","#c63a00"],["Légende","#b23400"],
+        ["Titan","#962b00"],["Héros","#7c2400"],["Gladiateur","#6b1e00"],["Demi-Dieu","#561900"],
+        ["Immortel","#421200"],["Gardien du Corps","#310c00"],["Seigneur du Fer","#220800"],["Divinité de la Force","#140400"]
+      ],
+      trading: [
+        ["Novice","#f3e8ff"],["Apprenti","#e9d4ff"],["Étudiant du Marché","#e0c2ff"],["Analyste Débutant","#d6b0ff"],
+        ["Technicien","#cda0ff"],["Stratège","#c393ff"],["Analyste Senior","#b57cff"],["Spéculateur","#a56aff"],
+        ["Opérateur","#9356e6"],["Trader Actif","#7f42cc"],["Risk Manager","#6b35b0"],["Stratège Financier","#582996"],
+        ["Maître du Graphique","#451f7a"],["Analyste Expert","#35155e"],["Senior Trader","#2a0f4a"],["Spéculateur Pro","#200836"],
+        ["Marchand du Chaos","#17042a"],["Architecte du Marché","#0f0216"],["Seigneur du Profit","#07010c"],["Maître du Marché","#030006"]
+      ]
+    };
+    return sets[skill].map((p,i)=>({ level:i+1, name:p[0], color:p[1] }));
+  }
+
+  // init defaults
+  Object.keys(DEFAULT.skills).forEach(k=> DEFAULT.levelsBySkill[k] = defaultLevelsFor(k));
+
+  /* ---------- Storage ---------- */
+  const STORAGE = 'dailyRoutine_master_v3';
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){ console.error('load error', e); return null; }
+  }
+  function saveState(s){ localStorage.setItem(STORAGE, JSON.stringify(s)); }
+
+  // load or create state
+  let state = loadState();
+  if(!state){
+    state = {
+      xpSettings: DEFAULT.xpSettings,
+      skills: DEFAULT.skills,
+      levelsBySkill: DEFAULT.levelsBySkill,
+      // daily records keyed by ISO date (yyyy-mm-dd)
+      daily: {}
+    };
+    saveState(state);
+  }
+
+  /* ---------- Daily date handling (reset tasks at midnight) ---------- */
+  function isoToday(){ return new Date().toISOString().slice(0,10); }
+  const lastActiveKey = 'lastActiveDate_v3';
+  const lastActive = localStorage.getItem(lastActiveKey);
+  const todayKey = isoToday();
+  if(lastActive !== todayKey){
+    // new day detected: set lastActiveDate to today (we don't erase historical daily records,
+    // we just ensure today's entry exists). This means you start with empty inputs for today.
+    localStorage.setItem(lastActiveKey, todayKey);
+    // create empty record for today if missing
+    if(!state.daily[todayKey]){
+      state.daily[todayKey] = {
+        water: false,
+        steps: 0,
+        sportMinutes: 0,
+        tradingMinutes: 0,
+        tradingGains: 0,
+        computed: { water:0, steps:0, sport:0, trading:0 } // xp per skill for that day
+      };
+      saveState(state);
+    }
+  } else {
+    // ensure today key exists
+    if(!state.daily[todayKey]) {
+      state.daily[todayKey] = { water:false, steps:0, sportMinutes:0, tradingMinutes:0, tradingGains:0, computed:{ water:0, steps:0, sport:0, trading:0 } };
+      saveState(state);
+    }
+  }
+
+  /* ---------- XP math ---------- */
+  const XP_PER_LEVEL = 100; // base (used for pct calculations); actual per-level growth uses formula below
+
+  function getXpNeeded(level){ // required XP for next level (you can tweak)
+    // modest exponential growth for RPG feeling
+    return Math.max(50, Math.floor(100 * Math.pow(1.15, level-1)));
+  }
+
+  // calculate XP for a given daily record (returns per-skill xp)
+  function computeXpForDay(record, xpSettings){
+    const out = { water:0, steps:0, sport:0, trading:0 };
+    // Water: fixed if completed
+    out.water = record.water ? xpSettings.water : 0;
+    // Steps: proportion of target 10000 -> scaled to stepsMax
+    const steps = Number(record.steps) || 0;
+    out.steps = Math.min((steps / 10000) * xpSettings.stepsMax, xpSettings.stepsMax);
+    // Sport: minutes * perMin
+    const mins = Number(record.sportMinutes) || 0;
+    out.sport = mins * xpSettings.sportPerMin;
+    // Trading: minutes * perMin + gains/divisor
+    const tmins = Number(record.tradingMinutes) || 0;
+    const gains = Number(record.tradingGains) || 0;
+    out.trading = (tmins * xpSettings.tradingPerMin) + (gains / xpSettings.tradingGainDivisor);
+    // round down to 2 decimals
+    Object.keys(out).forEach(k => out[k] = Math.round(out[k]*100)/100);
+    return out;
+  }
+
+  // sum xp for a skill across all days
+  function getSkillTotalXP(skillId){
+    let total = 0;
+    Object.values(state.daily).forEach(rec => {
+      if(rec && rec.computed && typeof rec.computed[skillId] === 'number') total += rec.computed[skillId];
+      else {
+        // fallback: compute if missing
+        const c = computeXpForDay(rec, state.xpSettings);
+        total += c[skillId] || 0;
+      }
+    });
+    return Math.round(total * 100)/100;
+  }
+
+  function getTotalXP(){
+    let tot = 0;
+    Object.values(DEFAULT.skills).forEach(s=> tot += getSkillTotalXP(s.id));
+    return Math.round(tot*100)/100;
+  }
+
+  function xpToLevelInfo(xp){
+    // convert xp to level + pct in level using getXpNeeded progression
+    let level = 1;
+    let remaining = xp;
+    while(level < 20){
+      const need = getXpNeeded(level);
+      if(remaining >= need){
+        remaining -= need;
+        level++;
+      } else break;
+    }
+    const currentNeed = getXpNeeded(level);
+    const pct = Math.min(100, (remaining / currentNeed) * 100);
+    return { level, xpInLevel: remaining, toNext: Math.max(0, currentNeed - remaining), pct: Math.round(pct*100)/100 };
+  }
+
+  /* ---------- DOM refs ---------- */
+  const goalsContainer = document.getElementById('goalsContainer');
+  const overallLevelEl = document.getElementById('overallLevel');
+  const overallBar = document.getElementById('overallBar');
+  const totalXPEl = document.getElementById('totalXP');
+  const levelsList = document.getElementById('levelsList');
+  const miniLevels = document.getElementById('miniLevels');
+
+  const xpWaterInput = document.getElementById('xpWater');
+  const xpStepsMaxInput = document.getElementById('xpStepsMax');
+  const xpSportPerMinInput = document.getElementById('xpSportPerMin');
+  const xpTradingPerMinInput = document.getElementById('xpTradingPerMin');
+  const xpTradingGainDivisorInput = document.getElementById('xpTradingGainDivisor');
+
+  const skillPreview = document.getElementById('skillPreview');
+  const previewArea = document.getElementById('previewArea');
+  const editLevelsBtn = document.getElementById('editLevelsBtn');
+
+  const modal = document.getElementById('modal');
+  const levelConfigWrap = document.getElementById('levelConfigWrap');
+  const modalTitle = document.getElementById('modalTitle');
+  const closeModal = document.getElementById('closeModal');
+  const resetLevelsBtn = document.getElementById('resetLevels');
+  const applyClose = document.getElementById('applyClose');
+
+  /* ---------- Render functions ---------- */
+
+  function ensureTodayRecord(){
+    const k = isoToday();
+    if(!state.daily[k]) {
+      state.daily[k] = { water:false, steps:0, sportMinutes:0, tradingMinutes:0, tradingGains:0, computed:{ water:0, steps:0, sport:0, trading:0 } };
+      saveState(state);
+    }
+    return state.daily[k];
+  }
+
+  function saveDayComputations(dateKey){
+    const rec = state.daily[dateKey];
+    if(!rec) return;
+    rec.computed = computeXpForDay(rec, state.xpSettings);
+    saveState(state);
+  }
+
+  function renderGoals(){
+    goalsContainer.innerHTML = '';
+    const dateKey = isoToday();
+    ensureTodayRecord();
+    const day = state.daily[dateKey];
+
+    const tasks = [
+      { id:'water', label:"Boire 3L d'eau (répartis)", meta:"500ml matin • 1L matinée • 1L après-midi • 500ml soir" },
+      { id:'steps', label:"Nombre de pas (objectif 10 000)", meta:"Saisis ton compteur de pas" },
+      { id:'sport', label:"Activité physique (minutes)", meta:"Saisis la durée de ton entraînement" },
+      { id:'trading', label:"Trading (temps + gains)", meta:"Saisis durée et gains si applicable" }
+    ];
+
+    tasks.forEach(t=>{
+      const row = document.createElement('div');
+      row.className='goal-row';
+
+      const left = document.createElement('div');
+      left.style.width='64px';
+
+      if(t.id==='water'){
+        const cb = document.createElement('div');
+        cb.className='goal-checkbox';
+        cb.innerHTML = day.water ? '✓' : '+';
+        cb.title = 'Cliquer pour marquer comme fait (3L)';
+        cb.onclick = ()=>{
+          day.water = !day.water;
+          saveDayComputations(isoToday());
+          saveState(state);
+          renderAll();
+        };
+        left.appendChild(cb);
+      } else {
+        const iconBox = document.createElement('div');
+        iconBox.style.width='64px'; iconBox.style.height='56px'; iconBox.style.display='flex'; iconBox.style.alignItems='center'; iconBox.style.justifyContent='center';
+        iconBox.style.borderRadius='10px'; iconBox.style.background='rgba(255,255,255,0.02)';
+        iconBox.innerHTML = DEFAULT.skills[t.id==='steps'?'steps':t.id==='sport'?'sport':'trading'].icon;
+        left.appendChild(iconBox);
+      }
+
+      const body = document.createElement('div');
+      body.className='goal-body';
+
+      const title = document.createElement('div'); title.className='goal-title';
+      const h = document.createElement('h3'); h.textContent = t.label;
+      title.appendChild(h);
+
+      const meta = document.createElement('div'); meta.className='goal-meta'; meta.textContent = t.meta;
+
+      body.appendChild(title);
+      body.appendChild(meta);
+
+      // controls
+      const controls = document.createElement('div');
+      controls.style.minWidth='190px'; controls.style.textAlign='right';
+
+      if(t.id==='steps'){
+        const inp = document.createElement('input');
+        inp.type='number'; inp.placeholder='Ex: 7800'; inp.style.width='120px'; inp.style.marginRight='8px';
+        inp.value = day.steps || '';
+        inp.onchange = (e)=>{
+          day.steps = Number(e.target.value) || 0;
+          saveDayComputations(isoToday());
+          saveState(state);
+          renderAll();
+        };
+        controls.appendChild(inp);
+      } else if(t.id==='sport'){
+        const inp = document.createElement('input');
+        inp.type='number'; inp.placeholder='minutes'; inp.style.width='120px'; inp.style.marginRight='8px';
+        inp.value = day.sportMinutes || '';
+        inp.onchange = (e)=>{
+          day.sportMinutes = Number(e.target.value) || 0;
+          saveDayComputations(isoToday());
+          saveState(state);
+          renderAll();
+        };
+        controls.appendChild(inp);
+      } else if(t.id==='trading'){
+        const inpMin = document.createElement('input');
+        inpMin.type='number'; inpMin.placeholder='minutes'; inpMin.style.width='80px'; inpMin.style.marginRight='6px';
+        inpMin.value = day.tradingMinutes || '';
+        inpMin.onchange = (e)=>{
+          day.tradingMinutes = Number(e.target.value) || 0;
+          saveDayComputations(isoToday());
+          saveState(state);
+          renderAll();
+        };
+        const inpGain = document.createElement('input');
+        inpGain.type='number'; inpGain.placeholder='gains €'; inpGain.style.width='80px'; inpGain.style.marginRight='6px';
+        inpGain.value = day.tradingGains || '';
+        inpGain.onchange = (e)=>{
+          day.tradingGains = Number(e.target.value) || 0;
+          saveDayComputations(isoToday());
+          saveState(state);
+          renderAll();
+        };
+        controls.appendChild(inpMin);
+        controls.appendChild(inpGain);
+      } else {
+        // water shows XP for today
+        const xpNow = document.createElement('div');
+        xpNow.style.fontWeight='700';
+        xpNow.textContent = day.water ? `${state.xpSettings.water} XP` : '—';
+        controls.appendChild(xpNow);
+      }
+
+      // append computed xp per skill for this task today (right under)
+      const xpLine = document.createElement('div');
+      xpLine.className='tiny';
+      xpLine.style.marginTop='8px';
+      const computed = day.computed || computeXpForDay(day, state.xpSettings);
+      let displayText = '';
+      if(t.id==='water') displayText = `XP aujourd'hui: ${computed.water} XP`;
+      if(t.id==='steps') displayText = `XP aujourd'hui: ${computed.steps} XP (${day.steps || 0} pas)`;
+      if(t.id==='sport') displayText = `XP aujourd'hui: ${computed.sport} XP (${day.sportMinutes || 0} min)`;
+      if(t.id==='trading') displayText = `XP aujourd'hui: ${computed.trading} XP (${day.tradingMinutes || 0} min, ${day.tradingGains || 0} €)`;
+      xpLine.textContent = displayText;
+      body.appendChild(xpLine);
+
+      row.appendChild(left);
+      row.appendChild(body);
+      row.appendChild(controls);
+
+      goalsContainer.appendChild(row);
+    });
+
+    // small divider: history quickview (last 7 days)
+    const histCard = document.createElement('div');
+    histCard.className='card';
+    histCard.style.marginTop='8px';
+    histCard.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><strong>Historique (7 derniers jours)</strong><button id="exportDays" class="small-btn">Exporter jours</button></div><div id="histList" class="tiny" style="margin-top:8px"></div>`;
+    goalsContainer.appendChild(histCard);
+
+    document.getElementById('exportDays').onclick = ()=> { exportConfig(); };
+
+    // build last 7 days
+    const histList = histCard.querySelector('#histList');
+    const keys = Object.keys(state.daily).sort().reverse().slice(0,7);
+    histList.innerHTML = '';
+    keys.forEach(k=>{
+      const rec = state.daily[k];
+      const c = rec.computed || computeXpForDay(rec, state.xpSettings);
+      histList.innerHTML += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,0.02)"><div><strong>${k}</strong></div><div>${Math.round((c.water + c.steps + c.sport + c.trading)*100)/100} XP</div></div>`;
+    });
+  }
+
+  function renderDashboard(){
+    const totalXP = getTotalXP();
+    totalXPEl.textContent = `${totalXP} XP`;
+
+    // overall: compute each skill level and average them
+    const skillIds = Object.keys(DEFAULT.skills);
+    const skillTotals = skillIds.map(id => getSkillTotalXP(id));
+    const skillInfos = skillTotals.map(xp => xpToLevelInfo(xp));
+    const avgLevel = Math.round(skillInfos.reduce((a,b)=>a+b.level,0)/skillInfos.length);
+    overallLevelEl.textContent = `Lv ${avgLevel}`;
+
+    const avgPct = skillInfos.reduce((a,b)=>a+b.pct,0) / skillInfos.length;
+    overallBar.style.width = `${Math.round(avgPct)}%`;
+
+    // mini badges
+    miniLevels.innerHTML = '';
+    skillIds.forEach((id, idx)=>{
+      const xp = skillTotals[idx];
+      const info = xpToLevelInfo(xp);
+      const skill = DEFAULT.skills[id];
+      const badge = document.createElement('div');
+      badge.style.padding='6px 10px';
+      badge.style.borderRadius='10px';
+      badge.style.background='rgba(255,255,255,0.02)';
+      badge.style.display='flex';
+      badge.style.alignItems='center';
+      badge.style.gap='8px';
+      badge.innerHTML = `<div style="font-size:16px">${skill.icon}</div><div style="font-size:13px"><strong>${skill.label}</strong><div class="tiny">Lv ${info.level} — ${Math.round(info.pct)}%</div></div>`;
+      miniLevels.appendChild(badge);
+    });
+
+    // detailed levels list
+    levelsList.innerHTML = '';
+    Object.keys(state.levelsBySkill).forEach(skillId=>{
+      const col = document.createElement('div');
+      col.style.minWidth='240px';
+      col.style.padding='10px';
+      col.style.borderRadius='10px';
+      col.style.background='rgba(255,255,255,0.01)';
+      col.style.display='flex';
+      col.style.flexDirection='column';
+      col.style.gap='8px';
+
+      const header = document.createElement('div');
+      header.style.display='flex';
+      header.style.justifyContent='space-between';
+      header.innerHTML = `<div style="font-weight:800">${DEFAULT.skills[skillId].icon} ${DEFAULT.skills[skillId].label}</div><div class="tiny">XP: ${getSkillTotalXP(skillId)}</div>`;
+      col.appendChild(header);
+
+      const curXP = getSkillTotalXP(skillId);
+      const info = xpToLevelInfo(curXP);
+      const levelName = (state.levelsBySkill[skillId] && state.levelsBySkill[skillId][info.level-1]) ? state.levelsBySkill[skillId][info.level-1].name : `Niveau ${info.level}`;
+      const color = (state.levelsBySkill[skillId] && state.levelsBySkill[skillId][info.level-1]) ? state.levelsBySkill[skillId][info.level-1].color : '#444';
+
+      const pill = document.createElement('div');
+      pill.style.padding='8px';
+      pill.style.borderRadius='10px';
+      pill.style.fontWeight='700';
+      pill.style.display='inline-block';
+      pill.textContent = `${levelName} — Lv ${info.level} (${Math.round(info.pct)}%)`;
+      pill.style.background = color;
+      pill.style.color = '#071226';
+      col.appendChild(pill);
+
+      // progress bar
+      const progWrap = document.createElement('div'); progWrap.className='progress';
+      const bar = document.createElement('div'); bar.className='bar';
+      const inner = document.createElement('i'); inner.style.width = `${info.pct}%`;
+      inner.style.background = `linear-gradient(90deg, ${color}, ${mixColors(color,'#8b5cf6',0.25)})`;
+      bar.appendChild(inner);
+      const stat = document.createElement('div'); stat.className='stat'; stat.textContent = `${curXP} XP`;
+      progWrap.appendChild(bar); progWrap.appendChild(stat);
+      col.appendChild(progWrap);
+
+      levelsList.appendChild(col);
+    });
+  }
+
+  function renderPreview(){
+    const skill = skillPreview.value;
+    const arr = state.levelsBySkill[skill];
+    previewArea.innerHTML = '';
+    arr.forEach(l=>{
+      const pill = document.createElement('div');
+      pill.className='level-pill';
+      pill.style.background = l.color;
+      pill.textContent = `Lv ${l.level} — ${l.name}`;
+      previewArea.appendChild(pill);
+    });
+  }
+
+  function renderAll(){
+    // ensure today's computations saved
+    const k = isoToday();
+    saveDayComputations(k);
+    renderGoals();
+    renderDashboard();
+    renderPreview();
+  }
+
+  /* ---------- Helpers ---------- */
+  function mixColors(c1, c2, weight){ // simple hex mix
+    try{
+      const a = hexToRgb(c1); const b = hexToRgb(c2);
+      const r = Math.round(a.r*(1-weight) + b.r*weight);
+      const g = Math.round(a.g*(1-weight) + b.g*weight);
+      const bl = Math.round(a.b*(1-weight) + b.b*weight);
+      return rgbToHex(r,g,bl);
+    }catch(e){ return c1; }
+  }
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    if(hex.length===3) hex = hex.split('').map(ch=>ch+ch).join('');
+    const num = parseInt(hex,16);
+    return { r: (num>>16)&255, g: (num>>8)&255, b: num&255 };
+  }
+  function rgbToHex(r,g,b){ return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+
+  /* ---------- Inputs binding (xp settings) ---------- */
+  xpWaterInput.value = state.xpSettings.water;
+  xpStepsMaxInput.value = state.xpSettings.stepsMax;
+  xpSportPerMinInput.value = state.xpSettings.sportPerMin;
+  xpTradingPerMinInput.value = state.xpSettings.tradingPerMin;
+  xpTradingGainDivisorInput.value = state.xpSettings.tradingGainDivisor;
+
+  [xpWaterInput, xpStepsMaxInput, xpSportPerMinInput, xpTradingPerMinInput, xpTradingGainDivisorInput].forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      state.xpSettings = {
+        water: Number(xpWaterInput.value),
+        stepsMax: Number(xpStepsMaxInput.value),
+        sportPerMin: Number(xpSportPerMinInput.value),
+        tradingPerMin: Number(xpTradingPerMinInput.value),
+        tradingGainDivisor: Number(xpTradingGainDivisorInput.value)
+      };
+      // recompute all daily computed XP using new settings
+      Object.keys(state.daily).forEach(k=>{
+        state.daily[k].computed = computeXpForDay(state.daily[k], state.xpSettings);
+      });
+      saveState(state);
+      renderAll();
+    });
+  });
+
+  skillPreview.addEventListener('change', renderPreview);
+
+  /* ---------- Modal: edit levels ---------- */
+  function openModal(skillId){
+    modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+    modalTitle.textContent = `Éditer les niveaux : ${DEFAULT.skills[skillId].label}`;
+    levelConfigWrap.innerHTML = '';
+
+    const wrap = document.createElement('div');
+    wrap.style.display='grid';
+    wrap.style.gridTemplateColumns='repeat(2,1fr)';
+    wrap.style.gap='8px';
+
+    state.levelsBySkill[skillId].forEach((l)=>{
+      const box = document.createElement('div');
+      box.style.display='flex'; box.style.gap='8px'; box.style.alignItems='center'; box.style.padding='6px';
+      const colorInput = document.createElement('input');
+      colorInput.type='color'; colorInput.value = l.color; colorInput.className='color-input';
+      colorInput.oninput = e=>{ l.color = e.target.value; saveState(state); renderAll(); renderPreview(); };
+      const nameInput = document.createElement('input');
+      nameInput.type='text'; nameInput.value = l.name; nameInput.onchange = e=>{ l.name = e.target.value; saveState(state); renderAll(); renderPreview(); };
+      nameInput.style.flex='1'; nameInput.style.padding='6px'; nameInput.style.borderRadius='8px';
+      box.appendChild(colorInput); box.appendChild(nameInput);
+      wrap.appendChild(box);
+    });
+    levelConfigWrap.appendChild(wrap);
+    modal.dataset.editing = skillId;
+  }
+
+  editLevelsBtn.addEventListener('click', ()=> openModal(skillPreview.value));
+  closeModal.addEventListener('click', ()=>{ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); });
+  applyClose.addEventListener('click', ()=>{ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); });
+
+  resetLevelsBtn.addEventListener('click', ()=>{
+    const skillId = modal.dataset.editing;
+    if(!skillId) return;
+    if(!confirm('Remettre les 20 niveaux par défaut pour cette compétence ?')) return;
+    state.levelsBySkill[skillId] = defaultLevelsFor(skillId);
+    saveState(state);
+    renderAll();
+    openModal(skillId);
+  });
+
+  // close modal by clicking outside
+  modal.addEventListener('click', e=>{ if(e.target===modal){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }});
+  window.addEventListener('keydown', e=>{ if(e.key==='Escape' && modal.classList.contains('open')){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }});
+
+  /* ---------- Export / Import / Reset ---------- */
+  function exportConfig(){
+    const cfg = JSON.stringify(state, null, 2);
+    const blob = new Blob([cfg], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'daily-routine-master-v3.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
+  document.getElementById('exportBtn').addEventListener('click', exportConfig);
+  document.getElementById('downloadConfig').addEventListener('click', exportConfig);
+
+  document.getElementById('importBtn').addEventListener('click', ()=>{
+    const file = document.createElement('input'); file.type='file'; file.accept='application/json';
+    file.onchange = e=>{
+      const f = e.target.files[0]; if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        try{
+          const j = JSON.parse(ev.target.result);
+          if(confirm('Importer cette configuration remplacera ta configuration locale. Continuer ?')){
+            state = j;
+            saveState(state);
+            // update inputs
+            xpWaterInput.value = state.xpSettings.water;
+            xpStepsMaxInput.value = state.xpSettings.stepsMax;
+            xpSportPerMinInput.value = state.xpSettings.sportPerMin;
+            xpTradingPerMinInput.value = state.xpSettings.tradingPerMin;
+            xpTradingGainDivisorInput.value = state.xpSettings.tradingGainDivisor;
+            renderAll();
+            alert('Import réussi.');
+          }
+        }catch(err){ alert('Fichier JSON invalide'); }
+      };
+      reader.readAsText(f);
+    };
+    file.click();
+  });
+
+  document.getElementById('loadConfig').addEventListener('click', ()=>{
+    const text = prompt('Colle le JSON de configuration ici :');
+    if(!text) return;
+    try{
+      const j = JSON.parse(text);
+      if(confirm('Importer cette configuration remplacera ta configuration locale. Continuer ?')){
+        state = j; saveState(state);
+        xpWaterInput.value = state.xpSettings.water;
+        xpStepsMaxInput.value = state.xpSettings.stepsMax;
+        xpSportPerMinInput.value = state.xpSettings.sportPerMin;
+        xpTradingPerMinInput.value = state.xpSettings.tradingPerMin;
+        xpTradingGainDivisorInput.value = state.xpSettings.tradingGainDivisor;
+        renderAll();
+        alert('Import réussi.');
+      }
+    }catch(e){ alert('JSON invalide'); }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Réinitialiser toutes les données (y compris historique & niveaux modifiés) ?')) return;
+    state = {
+      xpSettings: DEFAULT.xpSettings,
+      skills: DEFAULT.skills,
+      levelsBySkill: DEFAULT.levelsBySkill,
+      daily: {}
+    };
+    // ensure today's record
+    state.daily[isoToday()] = { water:false, steps:0, sportMinutes:0, tradingMinutes:0, tradingGains:0, computed:{ water:0, steps:0, sport:0, trading:0 } };
+    saveState(state);
+    // update UI inputs
+    xpWaterInput.value = state.xpSettings.water;
+    xpStepsMaxInput.value = state.xpSettings.stepsMax;
+    xpSportPerMinInput.value = state.xpSettings.sportPerMin;
+    xpTradingPerMinInput.value = state.xpSettings.tradingPerMin;
+    xpTradingGainDivisorInput.value = state.xpSettings.tradingGainDivisor;
+    renderAll();
+  });
+
+  // open settings quick
+  document.getElementById('openSettings').addEventListener('click', ()=> document.querySelector('.sidebar').scrollIntoView({behavior:'smooth'}));
+
+  /* ---------- Initial compute for all existing daily records ---------- */
+  Object.keys(state.daily).forEach(k => {
+    state.daily[k].computed = computeXpForDay(state.daily[k], state.xpSettings);
+  });
+  saveState(state);
+
+  // initial render
+  renderAll();
+
+  // --- Sauvegarde quotidienne de l'XP global ---
+function saveDailyXP() {
+  const today = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
+  const totalXP = Object.values(stats).reduce((sum, s) => sum + s.xp + (s.level * 100), 0);
+
+  let weeklyData = JSON.parse(localStorage.getItem("weeklyData")) || {};
+  weeklyData[today] = totalXP;
+
+  // Garde seulement les 7 derniers jours
+  const keys = Object.keys(weeklyData).sort();
+  if (keys.length > 7) delete weeklyData[keys[0]];
+
+  localStorage.setItem("weeklyData", JSON.stringify(weeklyData));
+  updateWeeklyChart(weeklyData);
+}
+
+// --- Graphe hebdomadaire avec Chart.js ---
+function updateWeeklyChart(data) {
+  const ctx = document.getElementById('weeklyChart').getContext('2d');
+  const labels = Object.keys(data);
+  const values = Object.values(data);
+
+  if (window.weeklyChart) window.weeklyChart.destroy(); // reset si existant
+
+  window.weeklyChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'XP total / jour',
+        data: values,
+        borderColor: '#00bcd4',
+        backgroundColor: 'rgba(0,188,212,0.2)',
+        borderWidth: 3,
+        tension: 0.3,
+        fill: true,
+        pointRadius: 5,
+        pointBackgroundColor: '#4a90e2'
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+          ticks: { color: '#ccc' },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        },
+        y: {
+          ticks: { color: '#ccc' },
+          grid: { color: 'rgba(255,255,255,0.1)' }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#fff' } }
+      }
+    }
+  });
+}
+
+// --- Met à jour le graphe chaque jour ---
+saveDailyXP();
+
+
+  </script>
+</body>
+</html>
